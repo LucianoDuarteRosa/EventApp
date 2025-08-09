@@ -7,12 +7,20 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-  TextInput
+  TextInput,
+  Platform
 } from 'react-native';
 
 // Componente de Toggle de Tema
 const ThemeToggle = ({ isDark, onToggle }) => (
-  <TouchableOpacity style={styles.themeToggle} onPress={onToggle}>
+  <TouchableOpacity
+    style={[styles.themeToggle, isDark && styles.themeToggleDark]}
+    onPress={() => {
+      console.log('ThemeToggle pressionado, isDark atual:', isDark);
+      onToggle();
+    }}
+    activeOpacity={0.7}
+  >
     <Text style={[styles.themeIcon, { color: isDark ? '#fff' : '#333' }]}>
       {isDark ? '☀️' : '🌙'}
     </Text>
@@ -24,7 +32,12 @@ const HomeScreen = ({ onNavigate, isDark, onToggleTheme }) => (
   <View style={[styles.container, isDark && styles.containerDark]}>
     <View style={[styles.header, isDark && styles.headerDark]}>
       <Text style={[styles.headerTitle, isDark && styles.textDark]}>EventApp</Text>
-      <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
+      <View style={styles.headerRight}>
+        <Text style={[styles.debugText, isDark && styles.textDark]}>
+          {isDark ? 'Escuro' : 'Claro'}
+        </Text>
+        <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
+      </View>
     </View>
 
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -94,10 +107,15 @@ const HomeScreen = ({ onNavigate, isDark, onToggleTheme }) => (
 const ScreenWithMenu = ({ title, icon, onNavigate, onOpenMenu, isDark, children }) => (
   <View style={[styles.container, isDark && styles.containerDark]}>
     <View style={[styles.header, isDark && styles.headerDark]}>
-      <TouchableOpacity onPress={onOpenMenu}>
+      <TouchableOpacity
+        onPress={onOpenMenu}
+        style={styles.menuButton}
+        activeOpacity={0.7}
+      >
         <Text style={[styles.menuIcon, isDark && styles.textDark]}>☰</Text>
       </TouchableOpacity>
       <Text style={[styles.headerTitle, isDark && styles.textDark]}>{title}</Text>
+      <View style={{ width: 44 }} />
     </View>
 
     <View style={styles.content}>
@@ -320,7 +338,14 @@ export default function App() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
 
-  const toggleTheme = () => setIsDarkTheme(!isDarkTheme);
+  const toggleTheme = () => {
+    console.log('Toggle theme - antes:', isDarkTheme);
+    setIsDarkTheme(prev => {
+      const newValue = !prev;
+      console.log('Toggle theme - depois:', newValue);
+      return newValue;
+    });
+  };
   const openMenu = () => setIsMenuVisible(true);
   const closeMenu = () => setIsMenuVisible(false);
 
@@ -422,7 +447,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
@@ -436,13 +463,42 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#666',
+  },
   menuIcon: {
     fontSize: 24,
     color: '#333',
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 44,
+    minHeight: 44,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+  },
+  menuButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 44,
+    minHeight: 44,
   },
   themeToggle: {
-    padding: 8,
+    padding: 12,
+    borderRadius: 8,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  themeToggleDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   themeIcon: {
     fontSize: 24,
@@ -523,7 +579,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
-    paddingVertical: 8,
+    paddingVertical: 12,
+    paddingBottom: Platform.OS === 'android' ? 25 : 20,
   },
   bottomTabDark: {
     backgroundColor: '#1e1e1e',
@@ -532,7 +589,7 @@ const styles = StyleSheet.create({
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
   tabIcon: {
     fontSize: 24,
@@ -688,7 +745,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 280,
     backgroundColor: '#fff',
-    paddingTop: 50,
+    paddingTop: Platform.OS === 'android' ? 60 : 50,
   },
   drawerDark: {
     backgroundColor: '#1e1e1e',
@@ -717,9 +774,10 @@ const styles = StyleSheet.create({
   drawerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
     marginHorizontal: 12,
     borderRadius: 8,
+    minHeight: 56,
   },
   drawerItemIcon: {
     fontSize: 24,
